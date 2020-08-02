@@ -1,12 +1,66 @@
-import React, {useState} from 'react';
+import React, {useReducer, useState} from 'react';
 import uuid from 'uuid/v4';
-import {useFilterState, useFilterDispatch, useTodosDispatch, useTodosState} from './context/context'
-
+ 
+const initialTodos = [
+  {
+    id: uuid(),
+    task: 'Learn React',
+    complete: true,
+  },
+  {
+    id: uuid(),
+    task: 'Learn Firebase',
+    complete: true,
+  },
+  {
+    id: uuid(),
+    task: 'Learn GraphQL',
+    complete: true,
+  },
+];
+const todoReducer = (state, action) => {
+  switch (action.type) {
+    case 'DO_TODO':
+      return state.map(todo => {
+        if (todo.id === action.id) {
+          return { ...todo, complete: true };
+        } else {
+          return todo;
+        }
+      });
+    case 'UNDO_TODO':
+      return state.map(todo => {
+        if (todo.id === action.id) {
+          return { ...todo, complete: false };
+        } else {
+          return todo;
+        }
+      });
+    case 'ADD_TODO':
+      return state.concat({
+        task: action.task,
+        id: action.id,
+        complete: false,
+      });
+    default:
+      throw new Error();
+  }
+};
+const filterReducer = (state, action) => {
+  switch (action.type) {
+    case 'SHOW_ALL':
+      return 'ALL';
+    case 'SHOW_COMPLETE':
+      return 'COMPLETE';
+    case 'SHOW_INCOMPLETE':
+      return 'INCOMPLETE';
+    default:
+      throw new Error();
+  }
+};
 function App() {
-  const todos = useTodosState()
-  const dispatchTodos = useTodosDispatch()
-  const filter = useFilterState()
-  const dispatchFilter = useFilterDispatch()
+  const [todos, dispatchTodos] = useReducer(todoReducer, initialTodos);
+  const [filter, dispatchFilter] = useReducer(filterReducer, 'ALL');
   const [task, setTask] = useState('');
   const handleChangeInput = event => {
     setTask(event.target.value);
@@ -56,7 +110,6 @@ function App() {
   };
 
   return (
-    
     <div className="App">
       <div>
         <button type="button" onClick={handleShowAll}>
